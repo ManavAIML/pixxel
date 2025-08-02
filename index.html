@@ -1,1 +1,2474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Canteen</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* Loader Styles */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader {
+            width: 100px;
+            height: 100px;
+            border: 10px solid #f3f3f3;
+            border-top: 10px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            position: absolute;
+            bottom: 40%;
+            font-size: 24px;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        /* Main App Styles */
+        .app {
+            display: none;
+        }
+
+        .app.active {
+            display: block;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .college-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .canteen-selector {
+            position: relative;
+        }
+
+        .canteen-dropdown {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3498db;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #3498db;
+            color: #3498db;
+        }
+
+        .btn-outline:hover {
+            background-color: #f0f8ff;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            background-color: #3498db;
+            padding: 10px 20px;
+            position: sticky;
+            top: 70px;
+            z-index: 99;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .cart-icon {
+            position: relative;
+            color: white;
+            font-size: 20px;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* Food Marquee */
+        .food-marquee {
+            overflow: hidden;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            margin-bottom: 30px;
+        }
+
+        .marquee-content {
+            display: flex;
+            animation: marquee 20s linear infinite;
+        }
+
+        .food-item {
+            flex: 0 0 200px;
+            margin: 0 10px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .food-item:hover {
+            transform: scale(1.05);
+        }
+
+        .food-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .food-name {
+            text-align: center;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Food Categories */
+        .food-categories {
+            margin-bottom: 30px;
+        }
+
+        .category-title {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .category-card {
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .category-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .category-info {
+            padding: 15px;
+        }
+
+        .category-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .category-desc {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Authentication Forms */
+        .auth-container {
+            max-width: 500px;
+            margin: 50px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .auth-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #3498db;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-checkbox {
+            width: 18px;
+            height: 18px;
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .file-upload-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border: 1px dashed #ddd;
+            border-radius: 4px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .file-upload-label:hover {
+            background-color: #e9ecef;
+        }
+
+        .auth-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .auth-submit:hover {
+            background-color: #2980b9;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .auth-switch a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        /* Food Detail Page */
+        .food-detail-container {
+            max-width: 1000px;
+            margin: 30px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .food-detail-header {
+            position: relative;
+            height: 300px;
+        }
+
+        .food-detail-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .food-detail-content {
+            padding: 30px;
+        }
+
+        .food-detail-title {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .food-detail-rating {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stars {
+            color: #f39c12;
+        }
+
+        .food-detail-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+
+        .food-detail-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .nutrition-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .nutrition-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .nutrition-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .nutrition-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .ingredients-list {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+
+        .ingredients-list li {
+            margin-bottom: 8px;
+        }
+
+        .food-order-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            background-color: #f8f9fa;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .quantity-input {
+            width: 50px;
+            height: 40px;
+            border: none;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .add-to-cart-btn {
+            padding: 12px 25px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .add-to-cart-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .user-reviews {
+            margin-top: 30px;
+        }
+
+        .review-form {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .review-rating {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .review-star {
+            font-size: 24px;
+            color: #ddd;
+            cursor: pointer;
+        }
+
+        .review-star.active {
+            color: #f39c12;
+        }
+
+        .review-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .review-submit {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .reviews-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .review-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .reviewer-name {
+            font-weight: bold;
+        }
+
+        .review-date {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .review-rating-stars {
+            color: #f39c12;
+            margin-bottom: 10px;
+        }
+
+        /* Cart Page */
+        .cart-container {
+            max-width: 800px;
+            margin: 30px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .cart-title {
+            font-size: 28px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .cart-empty {
+            text-align: center;
+            padding: 50px 0;
+            color: #666;
+        }
+
+        .cart-empty i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .cart-items {
+            margin-bottom: 30px;
+        }
+
+        .cart-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+
+        .cart-item-details {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .cart-quantity-selector {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .cart-quantity-btn {
+            width: 30px;
+            height: 30px;
+            background-color: #f8f9fa;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .cart-quantity-input {
+            width: 40px;
+            height: 30px;
+            border: none;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .cart-remove-btn {
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .cart-summary {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .cart-summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .cart-summary-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .cart-actions {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cart-order-btn {
+            padding: 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cart-order-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .schedule-order {
+            margin-top: 15px;
+        }
+
+        .schedule-order-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .schedule-order-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* Profile Page */
+        .profile-container {
+            max-width: 800px;
+            margin: 30px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .profile-header {
+            background-color: #3498db;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .profile-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            font-size: 48px;
+            color: #3498db;
+        }
+
+        .profile-name {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .profile-email {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .profile-content {
+            padding: 30px;
+        }
+
+        .profile-section {
+            margin-bottom: 30px;
+        }
+
+        .profile-section-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .profile-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-info-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .profile-info-value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .profile-edit-btn {
+            padding: 8px 15px;
+            background-color: transparent;
+            border: 1px solid #3498db;
+            color: #3498db;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .profile-edit-btn:hover {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .profile-orders {
+            margin-top: 30px;
+        }
+
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .order-item {
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-details {
+            flex: 1;
+        }
+
+        .order-id {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .order-date {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .order-status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .order-total {
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        /* Edit Profile Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .notification.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-content {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav-links {
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            .category-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .food-detail-order {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .cart-item {
+                flex-direction: column;
+            }
+
+            .cart-item-img {
+                margin-bottom: 10px;
+            }
+
+            .profile-info {
+                grid-template-columns: 1fr;
+            }
+
+            .order-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .order-total {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader-container" id="loader">
+        <div class="loader"></div>
+        <div class="loader-text">College Canteen</div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app" id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="college-name">ABC College of Engineering</div>
+                
+                <div class="canteen-selector">
+                    <select class="canteen-dropdown" id="canteenSelect">
+                        <option value="main">Main Canteen</option>
+                        <option value="north">North Campus Canteen</option>
+                        <option value="south">South Campus Canteen</option>
+                        <option value="hostel">Hostel Canteen</option>
+                    </select>
+                </div>
+                
+                <div class="auth-section" id="authSection">
+                    <div class="auth-buttons" id="authButtons">
+                        <button class="btn btn-outline" id="signInBtn">Sign In</button>
+                        <button class="btn btn-primary" id="signUpBtn">Sign Up</button>
+                    </div>
+                    
+                    <div class="user-profile" id="userProfile" style="display: none;">
+                        <div class="profile-avatar" id="profileAvatar">U</div>
+                        <span id="userName">User</span>
+                        <button class="btn btn-outline" id="logoutBtn">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Bar -->
+        <nav class="nav-bar">
+            <div class="nav-content">
+                <div class="nav-links">
+                    <a href="#" class="nav-link active" data-page="home">Home</a>
+                    <a href="#" class="nav-link" data-page="menu">Menu</a>
+                    <a href="#" class="nav-link" data-page="orders">My Orders</a>
+                </div>
+                
+                <div class="cart-icon-container">
+                    <a href="#" class="nav-link" data-page="cart">
+                        <i class="fas fa-shopping-cart cart-icon"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Home Page Content -->
+            <div id="homePage" class="page active">
+                <!-- Food Marquee -->
+                <div class="food-marquee">
+                    <div class="marquee-content" id="marqueeContent">
+                        <!-- Food items will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Food Categories -->
+                <div class="food-categories">
+                    <h2 class="category-title">Popular Categories</h2>
+                    <div class="category-grid" id="categoryGrid">
+                        <!-- Categories will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Page Content -->
+            <div id="menuPage" class="page" style="display: none;">
+                <h2 class="category-title">Menu</h2>
+                <div class="category-grid" id="menuGrid">
+                    <!-- Menu items will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Orders Page Content -->
+            <div id="ordersPage" class="page" style="display: none;">
+                <h2 class="category-title">My Orders</h2>
+                <div class="orders-list" id="ordersList">
+                    <!-- Orders will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Cart Page Content -->
+            <div id="cartPage" class="page" style="display: none;">
+                <div class="cart-container">
+                    <h2 class="cart-title">Your Cart</h2>
+                    
+                    <div id="cartItemsContainer">
+                        <!-- Cart items will be dynamically added here -->
+                    </div>
+                    
+                    <div class="cart-summary" id="cartSummary" style="display: none;">
+                        <div class="cart-summary-row">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+                        <div class="cart-summary-row">
+                            <span>Tax (8%):</span>
+                            <span id="tax">$0.00</span>
+                        </div>
+                        <div class="cart-summary-row">
+                            <span>Delivery Fee:</span>
+                            <span id="deliveryFee">$2.00</span>
+                        </div>
+                        <div class="cart-summary-total">
+                            <span>Total:</span>
+                            <span id="total">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cart-actions" id="cartActions" style="display: none;">
+                        <button class="cart-order-btn" id="orderNowBtn">Order Now</button>
+                        
+                        <div class="schedule-order">
+                            <label class="schedule-order-label" for="scheduleOrder">Schedule Order (Optional):</label>
+                            <input type="datetime-local" class="schedule-order-input" id="scheduleOrder">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Sign In Modal -->
+    <div class="modal" id="signInModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Sign In</h3>
+                <span class="modal-close" data-modal="signInModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="signInForm">
+                    <div class="form-group">
+                        <label class="form-label" for="signInEmail">Email</label>
+                        <input type="email" class="form-input" id="signInEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signInPassword">Password</label>
+                        <input type="password" class="form-input" id="signInPassword" required>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="form-checkbox" id="staySignedIn">
+                        <label for="staySignedIn">Stay signed in</label>
+                    </div>
+                    
+                    <button type="submit" class="auth-submit">Sign In</button>
+                </form>
+                
+                <div class="auth-switch">
+                    Don't have an account? <a href="#" id="switchToSignUp">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div class="modal" id="signUpModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Sign Up</h3>
+                <span class="modal-close" data-modal="signUpModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="signUpForm">
+                    <div class="form-group">
+                        <label class="form-label" for="signUpName">Full Name</label>
+                        <input type="text" class="form-input" id="signUpName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signUpEmail">Email</label>
+                        <input type="email" class="form-input" id="signUpEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signUpRollNo">Roll Number</label>
+                        <input type="text" class="form-input" id="signUpRollNo" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signUpBranch">Branch</label>
+                        <input type="text" class="form-input" id="signUpBranch" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signUpYear">Year</label>
+                        <select class="form-input" id="signUpYear" required>
+                            <option value="">Select Year</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signUpPhone">Phone Number</label>
+                        <input type="tel" class="form-input" id="signUpPhone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signUpIdImage">College ID Image</label>
+                        <div class="file-upload">
+                            <input type="file" class="file-upload-input" id="signUpIdImage" accept="image/*" required>
+                            <label for="signUpIdImage" class="file-upload-label">
+                                <i class="fas fa-cloud-upload-alt"></i> Upload ID Image
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signUpPassword">Password</label>
+                        <input type="password" class="form-input" id="signUpPassword" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signUpConfirmPassword">Confirm Password</label>
+                        <input type="password" class="form-input" id="signUpConfirmPassword" required>
+                    </div>
+                    
+                    <button type="submit" class="auth-submit">Sign Up</button>
+                </form>
+                
+                <div class="auth-switch">
+                    Already have an account? <a href="#" id="switchToSignIn">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Food Detail Modal -->
+    <div class="modal" id="foodDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="foodDetailTitle">Food Details</h3>
+                <span class="modal-close" data-modal="foodDetailModal">&times;</span>
+            </div>
+            <div class="modal-body" id="foodDetailBody">
+                <!-- Food details will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">My Profile</h3>
+                <span class="modal-close" data-modal="profileModal">&times;</span>
+            </div>
+            <div class="modal-body" id="profileBody">
+                <!-- Profile details will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Profile</h3>
+                <span class="modal-close" data-modal="editProfileModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="form-group">
+                        <label class="form-label" for="editProfileName">Full Name</label>
+                        <input type="text" class="form-input" id="editProfileName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="editProfileEmail">Email</label>
+                        <input type="email" class="form-input" id="editProfileEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="editProfilePhone">Phone Number</label>
+                        <input type="tel" class="form-input" id="editProfilePhone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="editProfileRollNo">Roll Number</label>
+                        <input type="text" class="form-input" id="editProfileRollNo" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="editProfileBranch">Branch</label>
+                        <input type="text" class="form-input" id="editProfileBranch" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="editProfileYear">Year</label>
+                        <select class="form-input" id="editProfileYear" required>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="editProfilePassword">Current Password</label>
+                        <input type="password" class="form-input" id="editProfilePassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal="editProfileModal">Cancel</button>
+                <button class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-title" id="notificationTitle"></div>
+        <div class="notification-message" id="notificationMessage"></div>
+    </div>
+
+    <script>
+        // Sample data
+        const foodItems = [
+            {
+                id: 1,
+                name: "Pizza",
+                price: 8.99,
+                image: "https://picsum.photos/seed/pizza/300/200.jpg",
+                category: "Fast Food",
+                ingredients: ["Flour", "Tomato Sauce", "Cheese", "Pepperoni", "Mushrooms", "Bell Peppers"],
+                nutrition: {
+                    calories: 285,
+                    protein: 12,
+                    carbs: 36,
+                    fat: 10,
+                    sugar: 4,
+                    fiber: 2
+                },
+                rating: 4.5,
+                canteen: ["main", "north"]
+            },
+            {
+                id: 2,
+                name: "Burger",
+                price: 6.99,
+                image: "https://picsum.photos/seed/burger/300/200.jpg",
+                category: "Fast Food",
+                ingredients: ["Bun", "Beef Patty", "Lettuce", "Tomato", "Onion", "Cheese", "Special Sauce"],
+                nutrition: {
+                    calories: 540,
+                    protein: 25,
+                    carbs: 30,
+                    fat: 31,
+                    sugar: 7,
+                    fiber: 2
+                },
+                rating: 4.2,
+                canteen: ["main", "south", "hostel"]
+            },
+            {
+                id: 3,
+                name: "Pasta",
+                price: 7.99,
+                image: "https://picsum.photos/seed/pasta/300/200.jpg",
+                category: "Italian",
+                ingredients: ["Pasta", "Tomato Sauce", "Cheese", "Basil", "Garlic", "Olive Oil"],
+                nutrition: {
+                    calories: 220,
+                    protein: 8,
+                    carbs: 43,
+                    fat: 3,
+                    sugar: 6,
+                    fiber: 3
+                },
+                rating: 4.7,
+                canteen: ["main", "north"]
+            },
+            {
+                id: 4,
+                name: "Salad",
+                price: 5.99,
+                image: "https://picsum.photos/seed/salad/300/200.jpg",
+                category: "Healthy",
+                ingredients: ["Lettuce", "Tomato", "Cucumber", "Olives", "Feta Cheese", "Dressing"],
+                nutrition: {
+                    calories: 150,
+                    protein: 4,
+                    carbs: 12,
+                    fat: 9,
+                    sugar: 6,
+                    fiber: 4
+                },
+                rating: 4.0,
+                canteen: ["main", "north", "south", "hostel"]
+            },
+            {
+                id: 5,
+                name: "Sandwich",
+                price: 4.99,
+                image: "https://picsum.photos/seed/sandwich/300/200.jpg",
+                category: "Fast Food",
+                ingredients: ["Bread", "Chicken", "Lettuce", "Tomato", "Mayonnaise"],
+                nutrition: {
+                    calories: 320,
+                    protein: 18,
+                    carbs: 29,
+                    fat: 14,
+                    sugar: 3,
+                    fiber: 2
+                },
+                rating: 3.8,
+                canteen: ["main", "south"]
+            },
+            {
+                id: 6,
+                name: "Sushi",
+                price: 9.99,
+                image: "https://picsum.photos/seed/sushi/300/200.jpg",
+                category: "Japanese",
+                ingredients: ["Rice", "Nori", "Fish", "Vegetables", "Soy Sauce", "Wasabi"],
+                nutrition: {
+                    calories: 255,
+                    protein: 9,
+                    carbs: 38,
+                    fat: 7,
+                    sugar: 3,
+                    fiber: 2
+                },
+                rating: 4.8,
+                canteen: ["north", "hostel"]
+            },
+            {
+                id: 7,
+                name: "Tacos",
+                price: 7.49,
+                image: "https://picsum.photos/seed/tacos/300/200.jpg",
+                category: "Mexican",
+                ingredients: ["Tortilla", "Beef", "Lettuce", "Tomato", "Cheese", "Sour Cream"],
+                nutrition: {
+                    calories: 226,
+                    protein: 12,
+                    carbs: 20,
+                    fat: 12,
+                    sugar: 2,
+                    fiber: 3
+                },
+                rating: 4.3,
+                canteen: ["south", "hostel"]
+            },
+            {
+                id: 8,
+                name: "Ice Cream",
+                price: 3.99,
+                image: "https://picsum.photos/seed/icecream/300/200.jpg",
+                category: "Dessert",
+                ingredients: ["Milk", "Sugar", "Cream", "Vanilla", "Eggs"],
+                nutrition: {
+                    calories: 207,
+                    protein: 3,
+                    carbs: 24,
+                    fat: 11,
+                    sugar: 21,
+                    fiber: 0
+                },
+                rating: 4.6,
+                canteen: ["main", "north", "south", "hostel"]
+            }
+        ];
+
+        const categories = [
+            {
+                id: 1,
+                name: "Fast Food",
+                image: "https://picsum.photos/seed/fastfood/300/200.jpg",
+                description: "Quick and delicious meals"
+            },
+            {
+                id: 2,
+                name: "Healthy",
+                image: "https://picsum.photos/seed/healthy/300/200.jpg",
+                description: "Nutritious and balanced options"
+            },
+            {
+                id: 3,
+                name: "Italian",
+                image: "https://picsum.photos/seed/italian/300/200.jpg",
+                description: "Authentic Italian cuisine"
+            },
+            {
+                id: 4,
+                name: "Dessert",
+                image: "https://picsum.photos/seed/dessert/300/200.jpg",
+                description: "Sweet treats and delights"
+            }
+        ];
+
+        // App state
+        let currentUser = null;
+        let cart = [];
+        let selectedCanteen = "main";
+        let orders = [];
+
+        // DOM elements
+        const loader = document.getElementById('loader');
+        const app = document.getElementById('app');
+        const authSection = document.getElementById('authSection');
+        const authButtons = document.getElementById('authButtons');
+        const userProfile = document.getElementById('userProfile');
+        const profileAvatar = document.getElementById('profileAvatar');
+        const userName = document.getElementById('userName');
+        const cartCount = document.getElementById('cartCount');
+        const marqueeContent = document.getElementById('marqueeContent');
+        const categoryGrid = document.getElementById('categoryGrid');
+        const menuGrid = document.getElementById('menuGrid');
+        const cartItemsContainer = document.getElementById('cartItemsContainer');
+        const cartSummary = document.getElementById('cartSummary');
+        const cartActions = document.getElementById('cartActions');
+        const ordersList = document.getElementById('ordersList');
+        const canteenSelect = document.getElementById('canteenSelect');
+        const notification = document.getElementById('notification');
+        const notificationTitle = document.getElementById('notificationTitle');
+        const notificationMessage = document.getElementById('notificationMessage');
+
+        // Modals
+        const signInModal = document.getElementById('signInModal');
+        const signUpModal = document.getElementById('signUpModal');
+        const foodDetailModal = document.getElementById('foodDetailModal');
+        const profileModal = document.getElementById('profileModal');
+        const editProfileModal = document.getElementById('editProfileModal');
+
+        // Forms
+        const signInForm = document.getElementById('signInForm');
+        const signUpForm = document.getElementById('signUpForm');
+        const editProfileForm = document.getElementById('editProfileForm');
+
+        // Initialize app
+        function initApp() {
+            // Hide loader after 2 seconds
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    app.classList.add('active');
+                }, 500);
+            }, 2000);
+
+            // Check if user is logged in
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateUserInterface();
+            }
+
+            // Load cart from localStorage
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+                cart = JSON.parse(savedCart);
+                updateCartCount();
+            }
+
+            // Load orders from localStorage
+            const savedOrders = localStorage.getItem('orders');
+            if (savedOrders) {
+                orders = JSON.parse(savedOrders);
+            }
+
+            // Render content
+            renderMarquee();
+            renderCategories();
+            renderMenu();
+
+            // Setup event listeners
+            setupEventListeners();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.getAttribute('data-page');
+                    navigateToPage(page);
+                });
+            });
+
+            // Auth buttons
+            document.getElementById('signInBtn').addEventListener('click', () => {
+                openModal(signInModal);
+            });
+
+            document.getElementById('signUpBtn').addEventListener('click', () => {
+                openModal(signUpModal);
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+
+            // Modal close buttons
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const modalId = btn.getAttribute('data-modal');
+                    closeModal(document.getElementById(modalId));
+                });
+            });
+
+            // Modal background click
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modal);
+                    }
+                });
+            });
+
+            // Auth switch links
+            document.getElementById('switchToSignUp').addEventListener('click', (e) => {
+                e.preventDefault();
+                closeModal(signInModal);
+                openModal(signUpModal);
+            });
+
+            document.getElementById('switchToSignIn').addEventListener('click', (e) => {
+                e.preventDefault();
+                closeModal(signUpModal);
+                openModal(signInModal);
+            });
+
+            // Form submissions
+            signInForm.addEventListener('submit', handleSignIn);
+            signUpForm.addEventListener('submit', handleSignUp);
+            document.getElementById('saveProfileBtn').addEventListener('click', handleEditProfile);
+
+            // Canteen selection
+            canteenSelect.addEventListener('change', (e) => {
+                selectedCanteen = e.target.value;
+                renderMarquee();
+                renderMenu();
+            });
+
+            // Order now button
+            document.getElementById('orderNowBtn').addEventListener('click', handleOrder);
+
+            // File upload label update
+            document.getElementById('signUpIdImage').addEventListener('change', (e) => {
+                const fileName = e.target.files[0]?.name || 'Upload ID Image';
+                e.target.nextElementSibling.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> ${fileName}`;
+            });
+        }
+
+        // Navigation
+        function navigateToPage(page) {
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-page') === page) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => {
+                p.style.display = 'none';
+            });
+
+            // Show selected page
+            const pageElement = document.getElementById(`${page}Page`);
+            if (pageElement) {
+                pageElement.style.display = 'block';
+            }
+
+            // Special handling for cart page
+            if (page === 'cart') {
+                renderCart();
+            } else if (page === 'orders') {
+                renderOrders();
+            } else if (page === 'profile') {
+                renderProfile();
+            }
+        }
+
+        // Render functions
+        function renderMarquee() {
+            const filteredItems = foodItems.filter(item => item.canteen.includes(selectedCanteen));
+            
+            // Create two sets of items for infinite scroll effect
+            const marqueeItems = [...filteredItems, ...filteredItems];
+            
+            marqueeContent.innerHTML = marqueeItems.map(item => `
+                <div class="food-item" onclick="showFoodDetail(${item.id})">
+                    <img src="${item.image}" alt="${item.name}" class="food-img">
+                    <div class="food-name">${item.name}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderCategories() {
+            categoryGrid.innerHTML = categories.map(category => `
+                <div class="category-card" onclick="filterByCategory('${category.name}')">
+                    <img src="${category.image}" alt="${category.name}" class="category-img">
+                    <div class="category-info">
+                        <div class="category-name">${category.name}</div>
+                        <div class="category-desc">${category.description}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMenu() {
+            const filteredItems = foodItems.filter(item => item.canteen.includes(selectedCanteen));
+            
+            menuGrid.innerHTML = filteredItems.map(item => `
+                <div class="category-card" onclick="showFoodDetail(${item.id})">
+                    <img src="${item.image}" alt="${item.name}" class="category-img">
+                    <div class="category-info">
+                        <div class="category-name">${item.name}</div>
+                        <div class="category-desc">$${item.price.toFixed(2)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCart() {
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="cart-empty">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>Your cart is empty</p>
+                    </div>
+                `;
+                cartSummary.style.display = 'none';
+                cartActions.style.display = 'none';
+                return;
+            }
+
+            cartItemsContainer.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+                    <div class="cart-item-details">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">$${item.price.toFixed(2)}</div>
+                    </div>
+                    <div class="cart-item-actions">
+                        <div class="cart-quantity-selector">
+                            <button class="cart-quantity-btn" onclick="updateCartItemQuantity(${item.id}, ${item.quantity - 1})">-</button>
+                            <input type="text" class="cart-quantity-input" value="${item.quantity}" readonly>
+                            <button class="cart-quantity-btn" onclick="updateCartItemQuantity(${item.id}, ${item.quantity + 1})">+</button>
+                        </div>
+                        <i class="fas fa-trash cart-remove-btn" onclick="removeFromCart(${item.id})"></i>
+                    </div>
+                </div>
+            `).join('');
+
+            // Calculate totals
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.08;
+            const deliveryFee = 2.00;
+            const total = subtotal + tax + deliveryFee;
+
+            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('tax').textContent = `$${tax.toFixed(2)}`;
+            document.getElementById('deliveryFee').textContent = `$${deliveryFee.toFixed(2)}`;
+            document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+
+            cartSummary.style.display = 'block';
+            cartActions.style.display = 'flex';
+        }
+
+        function renderOrders() {
+            if (orders.length === 0) {
+                ordersList.innerHTML = `
+                    <div class="cart-empty">
+                        <i class="fas fa-receipt"></i>
+                        <p>You haven't placed any orders yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            ordersList.innerHTML = orders.map(order => {
+                let statusClass = '';
+                let statusText = '';
+
+                switch (order.status) {
+                    case 'completed':
+                        statusClass = 'status-completed';
+                        statusText = 'Completed';
+                        break;
+                    case 'pending':
+                        statusClass = 'status-pending';
+                        statusText = 'Pending';
+                        break;
+                    case 'cancelled':
+                        statusClass = 'status-cancelled';
+                        statusText = 'Cancelled';
+                        break;
+                }
+
+                return `
+                    <div class="order-item">
+                        <div class="order-details">
+                            <div class="order-id">Order #${order.id}</div>
+                            <div class="order-date">${order.date}</div>
+                        </div>
+                        <div class="order-status ${statusClass}">${statusText}</div>
+                        <div class="order-total">$${order.total.toFixed(2)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderProfile() {
+            if (!currentUser) return;
+
+            const profileBody = document.getElementById('profileBody');
+            profileBody.innerHTML = `
+                <div class="profile-header">
+                    <div class="profile-avatar-large">${currentUser.name.charAt(0)}</div>
+                    <div class="profile-name">${currentUser.name}</div>
+                    <div class="profile-email">${currentUser.email}</div>
+                </div>
+                
+                <div class="profile-content">
+                    <div class="profile-section">
+                        <div class="profile-section-title">
+                            Personal Information
+                            <button class="profile-edit-btn" onclick="openEditProfile()">Edit</button>
+                        </div>
+                        <div class="profile-info">
+                            <div class="profile-info-item">
+                                <div class="profile-info-label">Full Name</div>
+                                <div class="profile-info-value">${currentUser.name}</div>
+                            </div>
+                            <div class="profile-info-item">
+                                <div class="profile-info-label">Email</div>
+                                <div class="profile-info-value">${currentUser.email}</div>
+                            </div>
+                            <div class="profile-info-item">
+                                <div class="profile-info-label">Phone Number</div>
+                                <div class="profile-info-value">${currentUser.phone}</div>
+                            </div>
+                            <div class="profile-info-item">
+                                <div class="profile-info-label">Roll Number</div>
+                                <div class="profile-info-value">${currentUser.rollNo}</div>
+                            </div>
+                            <div class="profile-info-item">
+                                <div class="profile-info-label">Branch</div>
+                                <div class="profile-info-value">${currentUser.branch}</div>
+                            </div>
+                            <div class="profile-info-item">
+                                <div class="profile-info-label">Year</div>
+                                <div class="profile-info-value">${currentUser.year}${getYearSuffix(currentUser.year)} Year</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-orders">
+                        <div class="profile-section-title">Order History</div>
+                        <div class="orders-list">
+                            ${orders.length === 0 ? 
+                                '<p>No orders yet</p>' : 
+                                orders.slice(0, 3).map(order => {
+                                    let statusClass = '';
+                                    let statusText = '';
+
+                                    switch (order.status) {
+                                        case 'completed':
+                                            statusClass = 'status-completed';
+                                            statusText = 'Completed';
+                                            break;
+                                        case 'pending':
+                                            statusClass = 'status-pending';
+                                            statusText = 'Pending';
+                                            break;
+                                        case 'cancelled':
+                                            statusClass = 'status-cancelled';
+                                            statusText = 'Cancelled';
+                                            break;
+                                    }
+
+                                    return `
+                                        <div class="order-item">
+                                            <div class="order-details">
+                                                <div class="order-id">Order #${order.id}</div>
+                                                <div class="order-date">${order.date}</div>
+                                            </div>
+                                            <div class="order-status ${statusClass}">${statusText}</div>
+                                            <div class="order-total">$${order.total.toFixed(2)}</div>
+                                        </div>
+                                    `;
+                                }).join('')
+                            }
+                        </div>
+                        ${orders.length > 3 ? '<a href="#" onclick="navigateToPage(\'orders\')" style="display: block; text-align: center; margin-top: 15px;">View All Orders</a>' : ''}
+                    </div>
+                </div>
+            `;
+
+            openModal(profileModal);
+        }
+
+        function showFoodDetail(itemId) {
+            const item = foodItems.find(food => food.id === itemId);
+            if (!item) return;
+
+            const foodDetailBody = document.getElementById('foodDetailBody');
+            foodDetailBody.innerHTML = `
+                <div class="food-detail-container">
+                    <div class="food-detail-header">
+                        <img src="${item.image}" alt="${item.name}" class="food-detail-img">
+                    </div>
+                    <div class="food-detail-content">
+                        <h2 class="food-detail-title">${item.name}</h2>
+                        <div class="food-detail-rating">
+                            <div class="stars">
+                                ${generateStars(item.rating)}
+                            </div>
+                            <span>${item.rating.toFixed(1)}</span>
+                        </div>
+                        <div class="food-detail-price">$${item.price.toFixed(2)}</div>
+                        
+                        <div class="food-detail-section">
+                            <h3 class="section-title">Nutrition Information</h3>
+                            <div class="nutrition-info">
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value">${item.nutrition.calories}</div>
+                                    <div class="nutrition-label">Calories</div>
+                                </div>
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value">${item.nutrition.protein}g</div>
+                                    <div class="nutrition-label">Protein</div>
+                                </div>
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value">${item.nutrition.carbs}g</div>
+                                    <div class="nutrition-label">Carbs</div>
+                                </div>
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value">${item.nutrition.fat}g</div>
+                                    <div class="nutrition-label">Fat</div>
+                                </div>
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value">${item.nutrition.sugar}g</div>
+                                    <div class="nutrition-label">Sugar</div>
+                                </div>
+                                <div class="nutrition-item">
+                                    <div class="nutrition-value">${item.nutrition.fiber}g</div>
+                                    <div class="nutrition-label">Fiber</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="food-detail-section">
+                            <h3 class="section-title">Ingredients</h3>
+                            <ul class="ingredients-list">
+                                ${item.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="food-order-section">
+                            <div class="quantity-selector">
+                                <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                                <input type="text" class="quantity-input" id="quantity-${item.id}" value="1" readonly>
+                                <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                            </div>
+                            <button class="add-to-cart-btn" onclick="addToCart(${item.id})">Add to Cart</button>
+                        </div>
+                        
+                        <div class="user-reviews">
+                            <h3 class="section-title">Reviews</h3>
+                            <div class="review-form">
+                                <div class="review-rating" id="review-rating">
+                                    ${[1, 2, 3, 4, 5].map(star => `<i class="fas fa-star review-star" data-rating="${star}" onclick="setRating(${star})"></i>`).join('')}
+                                </div>
+                                <textarea class="review-textarea" placeholder="Write your review..."></textarea>
+                                <button class="review-submit">Submit Review</button>
+                            </div>
+                            <div class="reviews-list">
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <div class="reviewer-name">John Doe</div>
+                                        <div class="review-date">2023-05-15</div>
+                                    </div>
+                                    <div class="review-rating-stars">
+                                        ${generateStars(5)}
+                                    </div>
+                                    <div class="review-text">
+                                        Amazing food! Highly recommend trying this.
+                                    </div>
+                                </div>
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <div class="reviewer-name">Jane Smith</div>
+                                        <div class="review-date">2023-04-22</div>
+                                    </div>
+                                    <div class="review-rating-stars">
+                                        ${generateStars(4)}
+                                    </div>
+                                    <div class="review-text">
+                                        Really good, but could be a bit spicier.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            openModal(foodDetailModal);
+        }
+
+        // Cart functions
+        function addToCart(itemId) {
+            const item = foodItems.find(food => food.id === itemId);
+            if (!item) return;
+
+            const quantity = parseInt(document.getElementById(`quantity-${itemId}`).value);
+            
+            const existingItem = cart.find(cartItem => cartItem.id === itemId);
+            
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({
+                    ...item,
+                    quantity: quantity
+                });
+            }
+            
+            updateCartCount();
+            saveCart();
+            
+            showNotification('Success', `${item.name} added to cart!`);
+            closeModal(foodDetailModal);
+        }
+
+        function updateCartItemQuantity(itemId, newQuantity) {
+            if (newQuantity <= 0) {
+                removeFromCart(itemId);
+                return;
+            }
+            
+            const item = cart.find(cartItem => cartItem.id === itemId);
+            if (item) {
+                item.quantity = newQuantity;
+                updateCartCount();
+                saveCart();
+                renderCart();
+            }
+        }
+
+        function removeFromCart(itemId) {
+            cart = cart.filter(item => item.id !== itemId);
+            updateCartCount();
+            saveCart();
+            renderCart();
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = count;
+        }
+
+        function saveCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+
+        function updateQuantity(itemId, change) {
+            const quantityInput = document.getElementById(`quantity-${itemId}`);
+            const currentValue = parseInt(quantityInput.value);
+            const newValue = Math.max(1, currentValue + change);
+            quantityInput.value = newValue;
+        }
+
+        // Order functions
+        function handleOrder() {
+            if (!currentUser) {
+                showNotification('Error', 'Please sign in to place an order');
+                openModal(signInModal);
+                return;
+            }
+
+            if (cart.length === 0) {
+                showNotification('Error', 'Your cart is empty');
+                return;
+            }
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.08;
+            const deliveryFee = 2.00;
+            const total = subtotal + tax + deliveryFee;
+
+            const scheduleOrder = document.getElementById('scheduleOrder').value;
+            const orderDate = scheduleOrder ? new Date(scheduleOrder) : new Date();
+
+            const newOrder = {
+                id: orders.length > 0 ? Math.max(...orders.map(o => o.id)) + 1 : 1,
+                items: [...cart],
+                subtotal: subtotal,
+                tax: tax,
+                deliveryFee: deliveryFee,
+                total: total,
+                date: orderDate.toLocaleDateString(),
+                status: 'pending'
+            };
+
+            orders.push(newOrder);
+            localStorage.setItem('orders', JSON.stringify(orders));
+
+            cart = [];
+            updateCartCount();
+            saveCart();
+            
+            document.getElementById('scheduleOrder').value = '';
+            
+            showNotification('Success', 'Order placed successfully!');
+            navigateToPage('orders');
+        }
+
+        // Auth functions
+        function handleSignIn(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('signInEmail').value;
+            const password = document.getElementById('signInPassword').value;
+            const staySignedIn = document.getElementById('staySignedIn').checked;
+            
+            // In a real app, you would authenticate with a server
+            // For demo purposes, we'll use localStorage
+            
+            const savedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = savedUsers.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                
+                if (staySignedIn) {
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                }
+                
+                updateUserInterface();
+                closeModal(signInModal);
+                showNotification('Success', 'Signed in successfully!');
+                
+                // Reset form
+                signInForm.reset();
+            } else {
+                showNotification('Error', 'Invalid email or password');
+            }
+        }
+
+        function handleSignUp(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('signUpName').value;
+            const email = document.getElementById('signUpEmail').value;
+            const rollNo = document.getElementById('signUpRollNo').value;
+            const branch = document.getElementById('signUpBranch').value;
+            const year = document.getElementById('signUpYear').value;
+            const phone = document.getElementById('signUpPhone').value;
+            const idImage = document.getElementById('signUpIdImage').files[0];
+            const password = document.getElementById('signUpPassword').value;
+            const confirmPassword = document.getElementById('signUpConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showNotification('Error', 'Passwords do not match');
+                return;
+            }
+            
+            // In a real app, you would send this data to a server
+            // For demo purposes, we'll use localStorage
+            
+            const savedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            // Check if user already exists
+            if (savedUsers.some(u => u.email === email)) {
+                showNotification('Error', 'An account with this email already exists');
+                return;
+            }
+            
+            const newUser = {
+                id: savedUsers.length > 0 ? Math.max(...savedUsers.map(u => u.id)) + 1 : 1,
+                name,
+                email,
+                rollNo,
+                branch,
+                year,
+                phone,
+                password, // In a real app, this would be hashed
+                idImage: idImage ? idImage.name : null
+            };
+            
+            savedUsers.push(newUser);
+            localStorage.setItem('users', JSON.stringify(savedUsers));
+            
+            // Show success message
+            showNotification('Success', 'Account created successfully! Please sign in.');
+            
+            // Close modal and open sign in
+            closeModal(signUpModal);
+            openModal(signInModal);
+            
+            // Reset form
+            signUpForm.reset();
+            document.querySelector('#signUpIdImage + .file-upload-label').innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload ID Image';
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            updateUserInterface();
+            showNotification('Success', 'You have been logged out');
+            navigateToPage('home');
+        }
+
+        function updateUserInterface() {
+            if (currentUser) {
+                authButtons.style.display = 'none';
+                userProfile.style.display = 'flex';
+                profileAvatar.textContent = currentUser.name.charAt(0);
+                userName.textContent = currentUser.name;
+            } else {
+                authButtons.style.display = 'flex';
+                userProfile.style.display = 'none';
+            }
+        }
+
+        function openEditProfile() {
+            if (!currentUser) return;
+            
+            document.getElementById('editProfileName').value = currentUser.name;
+            document.getElementById('editProfileEmail').value = currentUser.email;
+            document.getElementById('editProfilePhone').value = currentUser.phone;
+            document.getElementById('editProfileRollNo').value = currentUser.rollNo;
+            document.getElementById('editProfileBranch').value = currentUser.branch;
+            document.getElementById('editProfileYear').value = currentUser.year;
+            document.getElementById('editProfilePassword').value = '';
+            
+            closeModal(profileModal);
+            openModal(editProfileModal);
+        }
+
+        function handleEditProfile() {
+            if (!currentUser) return;
+            
+            const name = document.getElementById('editProfileName').value;
+            const email = document.getElementById('editProfileEmail').value;
+            const phone = document.getElementById('editProfilePhone').value;
+            const rollNo = document.getElementById('editProfileRollNo').value;
+            const branch = document.getElementById('editProfileBranch').value;
+            const year = document.getElementById('editProfileYear').value;
+            const password = document.getElementById('editProfilePassword').value;
+            
+            // In a real app, you would verify the password with a server
+            // For demo purposes, we'll just check if it's not empty
+            
+            if (!password) {
+                showNotification('Error', 'Please enter your current password');
+                return;
+            }
+            
+            // Update user data
+            currentUser.name = name;
+            currentUser.email = email;
+            currentUser.phone = phone;
+            currentUser.rollNo = rollNo;
+            currentUser.branch = branch;
+            currentUser.year = year;
+            
+            // Update in localStorage
+            const savedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+            const userIndex = savedUsers.findIndex(u => u.id === currentUser.id);
+            
+            if (userIndex !== -1) {
+                savedUsers[userIndex] = currentUser;
+                localStorage.setItem('users', JSON.stringify(savedUsers));
+            }
+            
+            if (localStorage.getItem('currentUser')) {
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            
+            updateUserInterface();
+            closeModal(editProfileModal);
+            showNotification('Success', 'Profile updated successfully!');
+        }
+
+        // Modal functions
+        function openModal(modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Utility functions
+        function showNotification(title, message, type = 'success') {
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function generateStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(rating)) {
+                    stars += '<i class="fas fa-star"></i>';
+                } else if (i - 0.5 <= rating) {
+                    stars += '<i class="fas fa-star-half-alt"></i>';
+                } else {
+                    stars += '<i class="far fa-star"></i>';
+                }
+            }
+            return stars;
+        }
+
+        function setRating(rating) {
+            const stars = document.querySelectorAll('#review-rating .review-star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        function getYearSuffix(year) {
+            if (year === 1) return 'st';
+            if (year === 2) return 'nd';
+            if (year === 3) return 'rd';
+            return 'th';
+        }
+
+        function filterByCategory(categoryName) {
+            // Navigate to menu page
+            navigateToPage('menu');
+            
+            // In a real app, you would filter the menu items
+            // For demo purposes, we'll just show a notification
+            showNotification('Info', `Showing ${categoryName} items`);
+        }
+
+        // Initialize the app when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
